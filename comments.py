@@ -4,12 +4,12 @@ from googleapiclient.errors import HttpError
 
 DATA_DIR = "data"
 
-def get_comment_replies(parent_id):
+def get_comment_replies(youtube, parent_id):
     "Retorna lista de respostas a um comentario"
 
     replies = []
     try:
-        response = youtube.Comments().list(
+        response = youtube.comments().list(
             part="snippet",
             parentId=parent_id,
             maxResults=100,
@@ -46,9 +46,10 @@ def save_video_comments(youtube, video_id, filename):
                 text = comment["snippet"]["textDisplay"]
                 comments.append(text)
                 # Pegar respostas tambem!
-                # if snippet["totalReplyCount"] > 0:
-                #     replies = get_comment_replies(comment["id"])
-                #     comments.extend(replies)
+                if snippet["totalReplyCount"] > 0:
+                    # print(text), se quiser ter um feedback
+                    replies = get_comment_replies(youtube, comment["id"])
+                    comments.extend(replies)
             
             with open(os.path.join(DATA_DIR, filename), "a") as savefile:
                 savefile.write("\n".join(comments))
